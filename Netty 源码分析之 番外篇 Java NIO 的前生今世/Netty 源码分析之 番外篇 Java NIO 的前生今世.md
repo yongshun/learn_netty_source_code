@@ -575,6 +575,8 @@ SelectionKey key = channel.register(selector, SelectionKey.OP_READ, theObject);
 ### 通过 Selector 选择 Channel
 我们可以通过 Selector.select()方法获取对某件事件准备好了的 Channel, 即如果我们在注册 Channel 时, 对其的**可写**事件感兴趣, 那么当 select()返回时, 我们就可以获取 Channel 了.
 >**`注意`**, select()方法返回的值表示有多少个 Channel 可操作.
+
+
 ### 获取可操作的 Channel
 如果 select()方法返回值表示有多个 Channel 准备好了, 那么我们可以通过 Selected key set 访问这个 Channel:
 ```
@@ -602,9 +604,17 @@ while(keyIterator.hasNext()) {
     keyIterator.remove();
 }
 ```
+
+
 `注意, 在每次迭代时, 我们都调用 "keyIterator.remove()" 将这个 key 从迭代器中删除, 因为 select() 方法仅仅是简单地将就绪的 IO 操作放到 selectedKeys 集合中, 因此如果我们从 selectedKeys 获取到一个 key, 但是没有将它删除, 那么下一次 select 时, 这个 key 所对应的 IO 事件还在 selectedKeys 中.`
+
+
 例如此时我们收到 OP_ACCEPT 通知, 然后我们进行相关处理, 但是并没有将这个 Key 从 SelectedKeys 中删除, 那么下一次 select() 返回时 我们还可以在 SelectedKeys 中获取到 OP_ACCEPT 的 key.
-`注意, 我们可以动态更改 SekectedKeys 中的 key 的 interest set.` 例如在 OP_ACCEPT 中, 我们可以将 interest set 更新为 OP_READ, 这样 Selector 就会将这个 Channel 的 读 IO 就绪事件包含进来了.
+
+
+`注意, 我们可以动态更改 SekectedKeys 中的 key 的 interest set.` 
+
+例如在 OP_ACCEPT 中, 我们可以将 interest set 更新为 OP_READ, 这样 Selector 就会将这个 Channel 的 读 IO 就绪事件包含进来了.
 
 ### Selector 的基本使用流程
  1. 通过 Selector.open() 打开一个 Selector.
@@ -614,13 +624,15 @@ while(keyIterator.hasNext()) {
   - 调用 selector.selectedKeys() 获取 selected keys
   - 迭代每个 selected key:
    - *从 selected key 中获取 对应的 Channel 和附加信息(如果有的话)
-   - *判断是哪些 IO 事件已经就绪了, 然后处理它们. `如果是 OP_ACCEPT 事件, 则调用 "SocketChannel clientChannel = ((ServerSocketChannel) key.channel()).accept()" 获取 SocketChannel, 并将它设置为 非阻塞的, 然后将这个 Channel 注册到 Selector 中.`
+   - *判断是哪些 IO 事件已经就绪了, 然后处理它们. **如果是 OP_ACCEPT 事件, 则调用 "SocketChannel clientChannel = ((ServerSocketChannel) key.channel()).accept()" 获取 SocketChannel, 并将它设置为 非阻塞的, 然后将这个 Channel 注册到 Selector 中.**
    - *根据需要更改 selected key 的监听事件.
    - *将已经处理过的 key 从 selected keys 集合中删除.
 
 
 ### 关闭 Selector
 当调用了 Selector.close()方法时, 我们其实是关闭了 Selector 本身并且将所有的 SelectionKey 失效, 但是并不会关闭 Channel.
+
+
 ### 完整的 Selector 例子
 ```
 public class NioEchoServer {
