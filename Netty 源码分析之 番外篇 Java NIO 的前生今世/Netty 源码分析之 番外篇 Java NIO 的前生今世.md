@@ -18,10 +18,13 @@ IO 和 NIO 的区别主要体现在三个方面:
  - IO 基于流(Stream oriented), 而 NIO 基于 Buffer (Buffer oriented)
  - IO 操作是阻塞的, 而 NIO 操作是非阻塞的
  - IO 没有 selector 概念, 而 NIO 有 selector 概念.
+
+
 #### 基于 Stream 与基于 Buffer
 传统的 IO 是面向字节流或字符流的, 而在 NIO 中, 我们抛弃了传统的 IO 流, 而是引入了 **Channel** 和 **Buffer** 的概念. 在 NIO 中, 我只能从 Channel 中读取数据到 Buffer 中或将数据从 Buffer 中写入到 Channel.
 那么什么是 **基于流** 呢? 在一般的 Java IO 操作中, 我们以流式的方式顺序地从一个 Stream 中读取一个或多个字节, 因此我们也就不能随意改变读取指针的位置.
 而 **基于 Buffer** 就显得有点不同了. 我们首先需要从 Channel 中读取数据到 Buffer 中, 当 Buffer 中有数据后, 我们就可以对这些数据进行操作了. 不像 IO 那样是顺序操作, NIO 中我们可以随意地读取任意位置的数据.
+
 #### 阻塞和非阻塞
 Java 提供的各种 Stream 操作都是阻塞的, 例如我们调用一个 read 方法读取一个文件的内容, 那么调用 read 的线程会被阻塞住, 直到 read 操作完成.
 而  NIO 的非阻塞模式允许我们非阻塞地进行 IO 操作. 例如我们需要从网络中读取数据, 在 NIO 的非阻塞模式中, 当我们调用 read 方法时, 如果此时有数据, 则 read 读取并返回; 如果此时没有数据, 则 read 直接返回, 而不会阻塞当前线程.
@@ -36,11 +39,14 @@ java Stream 和 NIO Channel 对比
  - Channel 可以异步地读写, 而 Stream 是阻塞的同步读写.
  - Channel 总是从 Buffer 中读取数据, 或将数据写入到 Buffer 中.
 
+
 Channel 类型有:
  - FileChannel, 文件操作
  - DatagramChannel, UDP 操作
  - SocketChannel, TCP 操作
  - ServerSocketChannel, TCP 操作, 使用在服务器端.
+
+
 这些通道涵盖了 UDP 和 TCP网络 IO以及文件 IO.
 基本的 Channel 使用例子:
 ```
@@ -254,6 +260,8 @@ Buffer 类型有:
  - IntBuffer
  - LongBuffer
  - ShortBuffer
+
+
 这些 Buffer 覆盖了能从 IO 中传输的所有的 Java 基本数据类型.
 ### NIO Buffer 的基本使用
 使用 NIO Buffer 的步骤如下:
@@ -285,7 +293,10 @@ public class Test {
  - capacity
  - position
  - limit
+
+
 其中 **position** 和 **limit** 的含义与 Buffer 处于读模式或写模式有关, 而 capacity 的含义与 Buffer 所处的模式无关.
+
 #### Capacity
 一个内存块会有一个固定的大小, 即容量(capacity), 我们最多写入**capacity** 个单位的数据到 Buffer 中, 例如一个 DoubleBuffer, 其 Capacity 是100, 那么我们最多可以写入100个 double 数据.
 #### Position
@@ -337,6 +348,8 @@ CharBuffer buf = CharBuffer.allocate(1024);
 **Non-Direct Buffer:**
  - 直接在 JVM 堆上进行内存的分配, 本质上是 byte[] 数组的封装.
  - 因为 Non-Direct Buffer 在 JVM 堆中, 因此当进行操作系统底层 IO 操作中时, 会将此 buffer 的内存复制到中间临时缓冲区中. 因此 Non-Direct Buffer 的效率就较低.
+
+
 ### 写入数据到 Buffer
 ```
 int bytesRead = inChannel.read(buf); //read into buffer.
@@ -442,6 +455,8 @@ public final Buffer clear() {
 clear 方法使用场景:
  - 在一个已经写满数据的 buffer 中, 调用 clear, 可以从头读取 buffer 的数据.
  - 为了将一个 buffer 填充满数据, 可以调用 clear, 然后一直写入, 直到达到 limit.
+
+
 ##### 例子:
 ```
 IntBuffer intBuffer = IntBuffer.allocate(2);
@@ -517,6 +532,8 @@ channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
  - channel
  - selector
  - attached object, 可选的附加对象
+
+
 #### interest set
 我们可以通过如下方式获取 interest set:
 ```
@@ -600,6 +617,8 @@ while(keyIterator.hasNext()) {
    - *判断是哪些 IO 事件已经就绪了, 然后处理它们. `如果是 OP_ACCEPT 事件, 则调用 "SocketChannel clientChannel = ((ServerSocketChannel) key.channel()).accept()" 获取 SocketChannel, 并将它设置为 非阻塞的, 然后将这个 Channel 注册到 Selector 中.`
    - *根据需要更改 selected key 的监听事件.
    - *将已经处理过的 key 从 selected keys 集合中删除.
+
+
 ### 关闭 Selector
 当调用了 Selector.close()方法时, 我们其实是关闭了 Selector 本身并且将所有的 SelectionKey 失效, 但是并不会关闭 Channel.
 ### 完整的 Selector 例子
