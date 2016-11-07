@@ -287,10 +287,9 @@ protected EventExecutor newChild(
  - 如果我们在实例化 NioEventLoopGroup 时, 如果指定线程池大小, 则 nThreads 就是指定的值, 反之是处理器核心数 * 2
  - MultithreadEventExecutorGroup 中会调用 newChild 抽象方法来初始化 children 数组
  - 抽象方法 newChild 是在 NioEventLoopGroup 中实现的, 它返回一个 NioEventLoop 实例.
-
  - NioEventLoop 属性:
-  - SelectorProvider provider 属性: NioEventLoopGroup 构造器中通过 SelectorProvider.provider() 获取一个 SelectorProvider -> MultithreadEventLoopGroup 构造器调用 -> MultithreadEventExecutorGroup 构造器初始化 children 时调用 -> NioEventLoopGroup#newChild -> NioEventLoop 构造器中
-  - Selector selector 属性: NioEventLoop 构造器中通过调用 openSelector() -> openSelector() 中通过 selector = provider.openSelector() 获取一个 selector 对象.
+  - SelectorProvider provider 属性: NioEventLoopGroup 构造器中通过 SelectorProvider.provider() 获取一个 SelectorProvider
+  - Selector selector 属性: NioEventLoop 构造器中通过调用通过 selector = provider.openSelector() 获取一个 selector 对象.
 
 ### channel 的注册过程
 在前面的分析中, 我们提到, channel 会在 Bootstrap.initAndRegister 中进行初始化, 但是这个方法还会将初始化好的 Channel 注册到 EventGroup 中. 接下来我们就来分析一下 Channel 注册的过程.
