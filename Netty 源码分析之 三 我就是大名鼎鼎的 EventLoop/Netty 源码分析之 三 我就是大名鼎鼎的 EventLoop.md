@@ -91,6 +91,7 @@ bossGroup 线程池中的线程数我们设置为4, 而 workerGroup 中的线程
 ### NioEventLoopGroup 实例化过程
 在前面 [Netty 源码分析之 一 揭开 Bootstrap 神秘的红盖头 (客户端)](https://segmentfault.com/a/1190000007282789#articleHeader7) 章节中, 我们已经简单地介绍了一下 NioEventLoopGroup 的初始化过程, 这里再回顾一下:
 ![Alt text](./NioEventLoopGroup 初始化顺序图.png)
+[点此下载原图](https://github.com/yongshun/learn_netty_source_code/blob/master/Netty%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%20%E4%B8%89%20%E6%88%91%E5%B0%B1%E6%98%AF%E5%A4%A7%E5%90%8D%E9%BC%8E%E9%BC%8E%E7%9A%84%20EventLoop/NioEventLoopGroup%20%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%BA%E5%BA%8F%E5%9B%BE.png)
 
 即:
  - EventLoopGroup(其实是MultithreadEventExecutorGroup) 内部维护一个类型为 EventExecutor children 数组, 其大小是 nThreads, 这样就构成了一个线程池
@@ -115,6 +116,9 @@ NioEventLoop -> SingleThreadEventLoop -> SingleThreadEventExecutor -> AbstractSc
 ### NioEventLoop 的实例化过程
 
 ![Alt text](./NioEventLoop 实例化顺序图.png)
+[点此下载原图](https://github.com/yongshun/learn_netty_source_code/blob/master/Netty%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%20%E4%B8%89%20%E6%88%91%E5%B0%B1%E6%98%AF%E5%A4%A7%E5%90%8D%E9%BC%8E%E9%BC%8E%E7%9A%84%20EventLoop/NioEventLoop%20%E5%AE%9E%E4%BE%8B%E5%8C%96%E9%A1%BA%E5%BA%8F%E5%9B%BE.png)
+
+
 从上图可以看到, SingleThreadEventExecutor 有一个名为 **thread** 的 Thread 类型字段, 这个字段就代表了与 SingleThreadEventExecutor 关联的本地线程.
 下面是这个构造器的代码:
 ```
@@ -148,6 +152,8 @@ protected SingleThreadEventExecutor(
 ### EventLoop 与 Channel 的关联
 Netty 中, 每个 Channel 都有且仅有一个 EventLoop 与之关联, 它们的关联过程如下:
 ![Alt text](./NioEventLoop 与 Channel 的关联过程.png)
+[点此下载原图](https://github.com/yongshun/learn_netty_source_code/blob/master/Netty%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%20%E4%B8%89%20%E6%88%91%E5%B0%B1%E6%98%AF%E5%A4%A7%E5%90%8D%E9%BC%8E%E9%BC%8E%E7%9A%84%20EventLoop/NioEventLoop%20%E4%B8%8E%20Channel%20%E7%9A%84%E5%85%B3%E8%81%94%E8%BF%87%E7%A8%8B.png)
+
 
 从上图中我们可以看到, 当调用了 **AbstractChannel#AbstractUnsafe.register** 后, 就完成了 Channel 和 EventLoop 的关联. register 实现如下:
 ```
@@ -256,6 +262,8 @@ public void execute(Runnable task) {
 总结一句话, 当 EventLoop.execute **第一次被调用**时, 就会触发 **startThread()** 的调用, 进而导致了 EventLoop 所对应的 Java 线程的启动.
 我们将 **EventLoop 与 Channel 的关联** 小节中的时序图补全后, 就得到了 EventLoop 启动过程的时序图:
 ![Alt text](./NioEventLoop 的启动过程.png)
+
+[点此下载原图](https://github.com/yongshun/learn_netty_source_code/blob/master/Netty%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%20%E4%B8%89%20%E6%88%91%E5%B0%B1%E6%98%AF%E5%A4%A7%E5%90%8D%E9%BC%8E%E9%BC%8E%E7%9A%84%20EventLoop/NioEventLoop%20%E7%9A%84%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B.png)
 
 
 

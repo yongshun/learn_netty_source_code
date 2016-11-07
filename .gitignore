@@ -9,3 +9,4 @@ logs/
 .settings/
 .DS_Store
 rebel.xml
+.zip
