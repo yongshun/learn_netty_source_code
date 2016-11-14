@@ -73,7 +73,8 @@ b.group(bossGroup, workerGroup)
 ```
 bossGroup 中只有一个线程, 而 workerGroup 中的线程是 CPU 核心数乘以2, 因此对应的到 Reactor 线程模型中, 我们知道, 这样设置的 NioEventLoopGroup 其实就是 **Reactor 多线程模型**.
 #### 主从多线程模型
-相信读者朋友都想到了, 实现主从线程模型的例子如下:
+
+~~相信读者朋友都想到了, 实现主从线程模型的例子如下:~~
 ```
 EventLoopGroup bossGroup = new NioEventLoopGroup(4);
 EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -82,7 +83,16 @@ b.group(bossGroup, workerGroup)
  .channel(NioServerSocketChannel.class)
  ...
 ```
-bossGroup 线程池中的线程数我们设置为4, 而 workerGroup 中的线程是 CPU 核心数乘以2, 因此对应的到 Reactor 线程模型中, 我们知道, 这样设置的 NioEventLoopGroup 其实就是 **Reactor 主从多线程模型**.
+~~bossGroup 线程池中的线程数我们设置为4, 而 workerGroup 中的线程是 CPU 核心数乘以2, 因此对应的到 Reactor 线程模型中, 我们知道, 这样设置的 NioEventLoopGroup 其实就是 **Reactor 主从多线程模型**.~~
+
+-----
+根据 @labmem 的提示, Netty 的服务器端的 acceptor 阶段, 没有使用到多线程, 因此上面的 `主从多线程模型` 在 Netty 的服务器端是不存在的.
+
+服务器端的 ServerSocketChannel 只绑定到了 bossGroup 中的一个线程, 因此在调用 Java NIO 的 Selector.select 处理客户端的连接请求时, 实际上是在一个线程中的, 所以对只有一个服务的应用来说, bossGroup 设置多个线程是没有什么作用的, 反而还会造成资源浪费.
+
+经 Google, Netty 中的 bossGroup 为什么使用线程池的原因大家众所纷纭, 不过我在 [stackoverflow](http://stackoverflow.com/questions/34275138/why-do-we-really-need-multiple-netty-boss-threads) 上找到一个比较靠谱的答案:
+>the creator of Netty says multiple boss threads are useful if we share NioEventLoopGroup between different server bootstraps, but I don't see the reason for it.
+因此上面的 `主从多线程模型` 分析是有问题, 抱歉.
 
 
 ### NioEventLoopGroup 类层次结构
